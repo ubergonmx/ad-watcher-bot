@@ -1,0 +1,24 @@
+# Web automation
+selenium==4.15.2
+
+# Desktop automation
+pyautogui==0.9.54
+
+# Image processing
+Pillow==10.1.0
+numpy<2  # Fixed version to avoid opencv compatibility issues
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Optional: For clipboard support (install based on OS)
+pyperclip==1.8.2
+
+# Optional: For enhanced image recognition
+opencv-python==4.8.1.78
+
+# Optional: For text recognition in images (WhatsApp detection)
+pytesseract==0.3.10
+
+# WebDriver management (optional, for auto-downloading drivers)
+webdriver-manager==4.0.1 
