@@ -24,6 +24,7 @@ ENV/
 
 # Screenshots and temporary files
 *.png
+!images/*.png
 *.jpg
 *.jpeg
 *.gif
