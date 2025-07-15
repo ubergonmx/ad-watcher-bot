@@ -169,10 +169,11 @@ def create_env_file_interactive():
     config['WEBSITE_USERNAME'] = get_user_input("Website username (phone number)")
     config['WEBSITE_PASSWORD'] = get_user_input("Website password")
     config['FUND_PASSWORD'] = get_user_input("Fund password (for withdrawals)")
+    config['WITHDRAWAL_AMOUNT'] = get_user_input("Withdrawal amount (only 60, 250, 750... PHP)")
     
     # Website URL
     config['WEBSITE_URL'] = get_user_input(
-        "Website URL (full URL including https://)", 
+        "Website URL (full URL with https:// and no #/ at the end)", 
         validate_func=validate_url
     )
     
@@ -208,6 +209,7 @@ def create_env_file_interactive():
             f.write(f"WEBSITE_USERNAME={config['WEBSITE_USERNAME']}\n")
             f.write(f"WEBSITE_PASSWORD={config['WEBSITE_PASSWORD']}\n")
             f.write(f"FUND_PASSWORD={config['FUND_PASSWORD']}\n")
+            f.write(f"WITHDRAWAL_AMOUNT={config['WITHDRAWAL_AMOUNT']}\n")
             f.write(f"WEBSITE_URL={config['WEBSITE_URL']}\n\n")
             
             f.write("# WhatsApp settings\n")
@@ -240,7 +242,8 @@ def verify_env_credentials():
             "your_username_here",
             "your_password_here", 
             "your_fund_password_here",
-            "AKQA Working Group #",
+            "withdrawal_amount",
+            "Working Group #",
             "website_url"
         ]
         
@@ -264,6 +267,7 @@ def verify_env_credentials():
             'WEBSITE_PASSWORD', 
             'FUND_PASSWORD',
             'WORKING_GROUP',
+            'WITHDRAWAL_AMOUNT',
             'WEBSITE_URL'
         ]
         
@@ -287,6 +291,14 @@ def verify_env_credentials():
         # Validate specific variables
         if not variables['WEBSITE_URL'].startswith('https://'):
             print("⚠️  WEBSITE_URL should start with 'https://'")
+            return False
+        
+        if variables['WEBSITE_URL'].endswith('/#') or variables['WEBSITE_URL'].endswith('/'):
+            print("⚠️  WEBSITE_URL should not end with '/#' or '/'")
+            return False
+        
+        if variables['WITHDRAWAL_AMOUNT'] not in ['60', '250', '750', '4700', '21000', '77000', '170000', '370000']:
+            print("⚠️  WITHDRAWAL_AMOUNT must be one of: 60, 250, 750, 4700, 21000, 77000, 170000, 370000")
             return False
         
         if variables['WORKING_GROUP'] and not variables['WORKING_GROUP'].replace("'", "").replace('"', '').strip():
