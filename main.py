@@ -1160,16 +1160,166 @@ class AdWatcherBot:
             logger.error(f"API task completion failed: {e}")
             return False
 
+    def complete_withdrawal_via_api(self, wallet_id: int = 2) -> bool:
+        """Complete withdrawal using API method."""
+        logger.info("Completing withdrawal via API...")
+        
+        current_time = datetime.now()
+        if current_time.weekday() > 4:
+            logger.info(f"Today is {current_time.strftime('%A')} - no withdrawals on weekends")
+            return False
+        if (current_time.hour, current_time.minute) < (9, 0):
+            time_until_9am = (datetime.strptime("09:00:00", "%H:%M:%S") - 
+                            datetime.strptime(current_time.strftime("%H:%M:%S"), "%H:%M:%S")).total_seconds()
+            logger.info(f"Waiting {time_until_9am} seconds until 9:00 AM")
+            time.sleep(time_until_9am)
+        
+        session = requests.Session()
+        headers = {
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'en-US,en;q=0.9',
+            'content-type': 'application/x-www-form-urlencoded',
+            'origin': self.WEBSITE_URL,
+            'referer': f'{self.WEBSITE_URL}/',
+            'user-agent': self.user_agent,
+        }
+        
+        try:
+            login_data = {
+                'username': self.username,
+                'password': self.password,
+                'language': 'fil_ph',
+                'referer': self.LOGIN_URL,
+            }
+            
+            login_resp = session.post('https://api.aksystemph.com/api/User/login', headers=headers, data=login_data)
+            login_resp.raise_for_status()
+            login_json = login_resp.json()
+            if login_json.get('code') != 1:
+                raise Exception(f"API login error: {login_json}")
+            
+            token = login_json['data']['token']
+            
+            user_data = {
+                'language': 'fil_ph',
+                'referer': f'{self.WEBSITE_URL}/#/user',
+                'token': token,
+            }
+            
+            user_resp = session.post('https://api.aksystemph.com/api/User/getUserInfo', headers=headers, data=user_data)
+            user_resp.raise_for_status()
+            user_json = user_resp.json()
+            if user_json.get('code') != 1:
+                raise Exception(f"API user info error: {user_json}")
+            
+            balance = float(user_json['data']['balance'])
+            withdrawal_amount = float(self.withdrawal_amount)
+            logger.info(f"Balance: {balance} PHP")
+            
+            if balance < withdrawal_amount:
+                logger.info("Balance insufficient for withdrawal")
+                return False
+            
+            today = current_time.strftime('%d-%m-%Y')
+            record_data = {
+                'state': '0',
+                'page_no': '1',
+                'language': 'en_us',
+                'referer': self.WALLET_PAGE_URL,
+                'token': token,
+            }
+            
+            record_resp = session.post('https://api.aksystemph.com/api/Withdraw/getWithdrawRecord', headers=headers, data=record_data)
+            record_resp.raise_for_status()
+            record_json = record_resp.json()
+            
+            if record_json.get('code') == 1:
+                records = record_json['data']['lists']
+                for record in records:
+                    if today in record.get('created_time', ''):
+                        logger.info(f"Withdrawal already made today: Order {record['order_id']}")
+                        return True
+            
+            wallet_list_data = {
+                'language': 'fil_ph',
+                'referer': f'{self.WEBSITE_URL}/#/user/bindWallet',
+                'token': token,
+            }
+            
+            wallet_list_resp = session.post('https://api.aksystemph.com/api/Account/getWalletList', headers=headers, data=wallet_list_data)
+            wallet_list_resp.raise_for_status()
+            wallet_list_json = wallet_list_resp.json()
+            if wallet_list_json.get('code') != 1:
+                raise Exception(f"API wallet list error: {wallet_list_json}")
+            
+            wallets = wallet_list_json['data']['data']
+            if not wallets:
+                raise Exception("No wallets found")
+            
+            selected_wallet = wallets[0]
+            logger.info(f"Using wallet: {selected_wallet['wallet_name']}")
+            
+            withdraw_data = {
+                'myWalletId': str(selected_wallet['id']),
+                'walletId': str(wallet_id),
+                'amount': str(int(self.withdrawal_amount)),
+                'password': self.fund_password,
+                'language': 'en_us',
+                'referer': self.WITHDRAW_PAGE_URL,
+                'token': token,
+            }
+            
+            withdraw_resp = session.post('https://api.aksystemph.com/api/Withdraw/submitWithdraw', headers=headers, data=withdraw_data)
+            withdraw_resp.raise_for_status()
+            withdraw_json = withdraw_resp.json()
+            if withdraw_json.get('code') != 1:
+                raise Exception(f"API withdrawal error: {withdraw_json}")
+            
+            logger.info("Withdrawal submitted successfully")
+            time.sleep(5)
+            
+            record_resp = session.post('https://api.aksystemph.com/api/Withdraw/getWithdrawRecord', headers=headers, data=record_data)
+            record_resp.raise_for_status()
+            record_json = record_resp.json()
+            if record_json.get('code') != 1:
+                raise Exception(f"API withdrawal record error: {record_json}")
+            
+            records = record_json['data']['lists']
+            if not records:
+                raise Exception("No withdrawal records found")
+            
+            latest_withdraw = records[0]
+            status = latest_withdraw['status']
+            logger.info(f"Withdrawal order {latest_withdraw['order_id']}: status {status}")
+            
+            if status == 1:
+                logger.info("Withdrawal completed successfully")
+                return True
+            elif status in [0, 3]:
+                logger.info("Withdrawal pending/processing")
+                return True
+            else:
+                logger.info("Withdrawal failed")
+                return False
+                
+        except Exception as e:
+            logger.error(f"API withdrawal failed: {e}")
+            return False
+
     def run(self, skip_whatsapp: bool = False):
         """Execute the full automation workflow."""
         logger.info("Starting Ad Watcher Bot...")
         try:
-            self.login_to_website()
-            self.setup_task_prerequisites()
+            if not self.skip_browser:
+                self.login_to_website() 
+                self.setup_task_prerequisites()
             tasks_completed = self.complete_tasks_via_api() if self.method == 'api' else self.start_tasks()
             if tasks_completed or self.complete_all_steps:
-                self.check_balance_and_withdraw()
-                self.wait_and_screenshot()
+                if not self.skip_browser:
+                    self.check_balance_and_withdraw()
+                    self.wait_and_screenshot()
+                else:
+                    self.complete_withdrawal_via_api()
                 if not skip_whatsapp:
                     self.open_whatsapp()
                     self.navigate_and_send_message()
