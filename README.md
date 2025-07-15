@@ -88,22 +88,22 @@ Grant these permissions in: **System Preferences → Security & Privacy → Priv
 You have to run either of the commands below:
 
 ```bash
-# Standard browser automation
+# Standard browser automation (stops when there's no task)
 python main.py
 
-# API-based task completion (faster)
+# API-based task completion (faster, stops when there's no task)
 python main.py --api
 
 # Complete all steps even if no tasks available
 python main.py -c
 
-# API mode with complete workflow
+# Complete all steps (uses API for task) even if no tasks available
 python main.py --api -c
 
 # Skip WhatsApp message sending (complete workflow without messaging)
 python main.py -c -sw
 
-# API-only mode without browser (fastest, no WhatsApp or browser)
+# API-only mode (fastest, no browser launching or sending WhatsApp message)
 python main.py --api -sw
 ```
 
@@ -115,8 +115,8 @@ python main.py --api -sw
 - More reliable but slower
 
 **API Mode**:
-- Direct API calls for task completion
-- Faster execution
+- Requires `--api` argument 
+- Faster execution with no launching browser if paired with skipping WhatsApp (`-sw`)
 - Less resource intensive
 
 ### Command Line Options
@@ -166,7 +166,7 @@ python main.py --api -sw
 ### Common Issues
 
 **Setup Problems:**
-- Run `python setup.py` again if interrupted
+- Run `python setup.py` again if interrupted or `.env` misconfigured
 - Check Python version (3.8+ required)
 - Ensure Chrome browser is installed
 
@@ -175,7 +175,7 @@ python main.py --api -sw
 - Grant permissions in System Preferences
 - Restart the terminal after granting permissions
 
-**Login Failures:**
+**Login/Withdrawal Failures:**
 - Verify credentials in `.env` file
 - Check if website URL is correct
 - Ensure account is not locked
@@ -212,7 +212,7 @@ ad-watcher-bot/
 - Python 3.8 or higher
 - Google Chrome browser
 - ChromeDriver (auto-installed via webdriver-manager)
-- WhatsApp Desktop (recommended) or WhatsApp Web access
+- WhatsApp Desktop (recommended) or WhatsApp Web access (not tested)
 - Active internet connection
 
 ## Security Notes
