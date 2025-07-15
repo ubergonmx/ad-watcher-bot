@@ -21,4 +21,7 @@ opencv-python==4.8.1.78
 pytesseract==0.3.10
 
 # WebDriver management (optional, for auto-downloading drivers)
-webdriver-manager==4.0.1 
+webdriver-manager==4.0.1
+
+# User agent generation
+fake-useragent==1.4.0 

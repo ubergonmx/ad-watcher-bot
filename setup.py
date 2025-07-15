@@ -144,6 +144,23 @@ def validate_method(method):
         return False
     return True
 
+def generate_user_agent():
+    """Generate a realistic user agent string."""
+    try:
+        from fake_useragent import UserAgent
+        ua = UserAgent()
+        # Get a Chrome user agent specifically
+        user_agent = ua.chrome
+        print(f"✅ Generated user agent: {user_agent[:50]}...")
+        return user_agent
+    except ImportError:
+        print("⚠️  fake-useragent not installed, using default user agent")
+        # Fallback to a modern Chrome user agent
+        return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    except Exception as e:
+        print(f"⚠️  Error generating user agent: {e}, using default")
+        return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+
 def create_env_file_interactive():
     """Create .env file interactively."""
     env_path = Path(".env")
@@ -198,6 +215,10 @@ def create_env_file_interactive():
         validate_func=validate_method
     )
     
+    # Generate user agent
+    print("\n🔄 Generating user agent...")
+    config['USER_AGENT'] = generate_user_agent()
+    
     # Create .env file
     try:
         with open(env_path, 'w') as f:
@@ -217,7 +238,10 @@ def create_env_file_interactive():
             
             f.write("# Optional settings\n")
             f.write(f"DEFAULT_IDENTITY={config['DEFAULT_IDENTITY']}\n")
-            f.write(f"DEFAULT_METHOD={config['DEFAULT_METHOD']}\n")
+            f.write(f"DEFAULT_METHOD={config['DEFAULT_METHOD']}\n\n")
+            
+            f.write("# Generated settings\n")
+            f.write(f"USER_AGENT={config['USER_AGENT']}\n")
         
         print("✅ .env file created successfully!")
         return True
@@ -268,7 +292,8 @@ def verify_env_credentials():
             'FUND_PASSWORD',
             'WORKING_GROUP',
             'WITHDRAWAL_AMOUNT',
-            'WEBSITE_URL'
+            'WEBSITE_URL',
+            'USER_AGENT'
         ]
         
         missing_vars = []
@@ -310,6 +335,10 @@ def verify_env_credentials():
         for var in optional_vars:
             if var in variables and variables[var]:
                 print(f"✅ {var} = {variables[var]}")
+        
+        # Check generated variables
+        if 'USER_AGENT' in variables and variables['USER_AGENT']:
+            print(f"✅ USER_AGENT = {variables['USER_AGENT'][:50]}...")
         
         # Validate DEFAULT_IDENTITY if present
         if 'DEFAULT_IDENTITY' in variables and variables['DEFAULT_IDENTITY']:
