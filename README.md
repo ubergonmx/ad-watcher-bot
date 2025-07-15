@@ -2,6 +2,10 @@
 
 This bot automates watching video ads and withdrawals from a website, and sends a screenshot proof to a WhatsApp group.
 
+To start, read [Getting started](#getting-started) section.
+
+To use, read [Basic Usage](#basic-usage) section.
+
 ## Features
 
 - Handles video ad watching with progress monitoring
@@ -30,7 +34,7 @@ python setup.py
 The setup will:
 - Check system requirements (Python, Chrome, ChromeDriver)
 - Install all required dependencies
-- Interactively configure your credentials (step 3)
+- Interactively configure your credentials ([step 3](#3-configuration-details))
 - Validate your settings
 - Check for optional enhancements
 
@@ -66,13 +70,13 @@ This utility will guide you through granting the necessary permissions:
 
 The following permissions must be granted in macOS System Preferences:
 
-**Accessibility Access** - Required for mouse/keyboard automation
+- **Accessibility Access** - Required for mouse/keyboard automation
 ![Accessibility Access](images/accessibility-access.png)
 
-**Screen Recording Access** - Required for screenshot capture and WhatsApp detection
+- **Screen Recording Access** - Required for screenshot capture and WhatsApp detection
 ![Screen Recording Access](images/screen-recording-access.png)
 
-**Automation Access** - Reduces permission dialogs
+- **Automation Access** - Reduces permission dialogs
 ![Automation Access](images/automation-access.png)
 
 Grant these permissions in: **System Preferences → Security & Privacy → Privacy**
@@ -95,6 +99,12 @@ python main.py -c
 
 # API mode with complete workflow
 python main.py --api -c
+
+# Skip WhatsApp message sending (complete workflow without messaging)
+python main.py -c -sw
+
+# API-only mode without browser (fastest, no WhatsApp or browser)
+python main.py --api -sw
 ```
 
 ### Operation Modes
@@ -108,6 +118,22 @@ python main.py --api -c
 - Direct API calls for task completion
 - Faster execution
 - Less resource intensive
+
+### Command Line Options
+
+**`-c, --complete`**: Complete all steps even if no tasks were completed
+- Forces execution of withdrawal check, screenshot, and WhatsApp steps
+- Useful for testing or when you want to send a status update regardless
+
+**`-sw, --skip-whatsapp`**: Skip WhatsApp message sending
+- Completes tasks and screenshots but doesn't send to WhatsApp
+- When combined with `--api`, also skips opening the browser entirely
+- Perfect for automated runs where messaging isn't needed
+
+**`--api`**: Use API method for task completion
+- Bypasses browser automation for faster execution
+- More reliable for task completion
+- When combined with `-sw`, creates a minimal, fast-running mode
 
 ### Features in Detail
 

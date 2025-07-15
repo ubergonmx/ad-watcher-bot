@@ -58,7 +58,7 @@ except ImportError:
 class AdWatcherBot:
     """Automation bot for task completion and WhatsApp reporting."""
     
-    def __init__(self, complete_all_steps: bool = False, method: str = 'browser'):
+    def __init__(self, complete_all_steps: bool = False, method: str = 'browser', skip_browser: bool = False):
         """Initialize the bot with environment variables and configurations."""
         load_dotenv()
 
@@ -86,16 +86,21 @@ class AdWatcherBot:
         self.driver = None
         self.task_url = None
         self.tasks_screenshot = None
+        self.skip_browser = skip_browser
         
-        # Initialize permissions
-        self._check_permissions()
-        
-        # Configure PyAutoGUI
-        pyautogui.FAILSAFE = True
-        pyautogui.PAUSE = 0.5
-        
-        # Initialize Selenium
-        self._setup_selenium()
+        # Skip browser setup if using API with skip-whatsapp
+        if not skip_browser:
+            # Initialize permissions
+            self._check_permissions()
+            
+            # Configure PyAutoGUI
+            pyautogui.FAILSAFE = True
+            pyautogui.PAUSE = 0.5
+            
+            # Initialize Selenium
+            self._setup_selenium()
+        else:
+            logger.info("Skipping browser setup for API-only mode")
 
     def _check_permissions(self):
         """Check macOS permissions if applicable."""
@@ -1159,7 +1164,7 @@ class AdWatcherBot:
             logger.error(f"API task completion failed: {e}")
             return False
 
-    def run(self):
+    def run(self, skip_whatsapp: bool = False):
         """Execute the full automation workflow."""
         logger.info("Starting Ad Watcher Bot...")
         try:
@@ -1169,9 +1174,10 @@ class AdWatcherBot:
             if tasks_completed or self.complete_all_steps:
                 self.check_balance_and_withdraw()
                 self.wait_and_screenshot()
-                self.open_whatsapp()
-                self.navigate_and_send_message()
-                self.close_whatsapp()
+                if not skip_whatsapp:
+                    self.open_whatsapp()
+                    self.navigate_and_send_message()
+                    self.close_whatsapp()
             logger.info("Bot completed successfully")
         except Exception as e:
             logger.error(f"Bot execution failed: {e}")
@@ -1188,22 +1194,27 @@ class AdWatcherBot:
                 logger.info("Browser closed")
             except Exception as e:
                 logger.warning(f"Error closing browser: {e}")
+        elif self.skip_browser:
+            logger.info("No browser to clean up in API-only mode")
 
 def main():
     """Main entry point for the script."""
     parser = argparse.ArgumentParser(description="Ad Watcher Bot")
     parser.add_argument('-c', '--complete', action='store_true', help='Complete all steps even if no tasks were done')
     parser.add_argument('--api', action='store_true', help='Use API method for task completion')
+    parser.add_argument('-sw', '--skip-whatsapp', action='store_true', help='Skip WhatsApp message sending')
     args = parser.parse_args()
     
     bot = None
     try:
-        bot = AdWatcherBot(complete_all_steps=args.complete, method='api' if args.api else 'browser')
+        # Skip browser setup if using API with skip-whatsapp
+        skip_browser = args.api and args.skip_whatsapp
+        bot = AdWatcherBot(complete_all_steps=args.complete, method='api' if args.api else 'browser', skip_browser=skip_browser)
         if args.api:
             success = bot.complete_tasks_via_api()
             logger.info("API tasks completed successfully" if success else "API task completion failed")
         else:
-            bot.run()
+            bot.run(skip_whatsapp=args.skip_whatsapp)
         return 0
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
@@ -1212,7 +1223,7 @@ def main():
         logger.error(f"Fatal error: {e}")
         return 1
     finally:
-        if bot and not args.api:
+        if bot and not (args.api and args.skip_whatsapp):
             bot.cleanup()
 
 if __name__ == "__main__":
