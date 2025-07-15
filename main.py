@@ -77,6 +77,7 @@ class AdWatcherBot:
         self.working_group = os.getenv('WORKING_GROUP')
         self.withdrawal_amount = os.getenv('WITHDRAWAL_AMOUNT')
         self.method = os.getenv('DEFAULT_METHOD', method).lower()
+        self.user_agent = os.getenv('USER_AGENT', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
         
         if not all([self.username, self.password, self.fund_password]):
             raise ValueError("Missing required environment variables: WEBSITE_USERNAME, WEBSITE_PASSWORD, FUND_PASSWORD")
@@ -126,6 +127,7 @@ class AdWatcherBot:
         """Set up Selenium WebDriver with Chrome options."""
         chrome_options = Options()
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument(f"--user-agent={self.user_agent}")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
@@ -1081,7 +1083,7 @@ class AdWatcherBot:
             'content-type': 'application/x-www-form-urlencoded',
             'origin': self.WEBSITE_URL,
             'referer': f'{self.WEBSITE_URL}/',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+            'user-agent': self.user_agent,
         }
         
         login_data = {
