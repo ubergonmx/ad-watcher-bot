@@ -1,15 +1,14 @@
 # Ad Watcher Bot
 
-This bot automates watching video ads from a website, and sends a screenshot proof to a WhatsApp group.
+This bot automates watching video ads and withdrawals from a website, and sends a screenshot proof to a WhatsApp group.
 
 ## Features
 
-- Automated login and task completion.
-- Takes screenshots of completed tasks.
-- Sends screenshots to a WhatsApp group.
-- Cross-platform support (macOS, Windows, Linux).
-- Automated setup script.
-- macOS permission checker.
+- Handles video ad watching with progress monitoring
+- Browser automation or API-based task completion
+- Automatic balance checking and withdrawal processing
+- Sends task completion screenshot to WhatsApp group
+- Works on macOS, not test yet on Windows and Linux
 
 ## Getting Started
 
@@ -20,53 +19,187 @@ git clone https://github.com/ubergonmx/ad-watcher-bot.git
 cd ad-watcher-bot
 ```
 
-### 2. Run the setup script
+### 2. Run the interactive setup
 
-This will install dependencies and create a `.env` file for you.
+The setup script will guide you through the entire configuration process:
 
 ```bash
 python setup.py
 ```
 
-### 3. Configure your credentials
+The setup will:
+- Check system requirements (Python, Chrome, ChromeDriver)
+- Install all required dependencies
+- Interactively configure your credentials (step 3)
+- Validate your settings
+- Check for optional enhancements
 
-Edit the `.env` file with your credentials.
+### 3. Configuration Details
 
-```
-WEBSITE_USERNAME=your_username
-WEBSITE_PASSWORD=your_password
-FUND_PASSWORD=your_fund_password
-```
+The setup script will ask for the following information:
 
-### 4. For macOS users
+**Required Settings:**
+- Website username (phone number)
+- Website password
+- Fund password (for withdrawals)
+- Withdrawal amount (only 60, 250, 750...)
+- Website URL (full URL with `https://` and no `/#` at the end)
+- WhatsApp working group name
 
-Before running the bot, check for the required permissions:
+**Optional Settings:**
+- Default identity (Internship, VIP1-VIP9) - Default: Internship
+- Default method (browser/api) - Default: browser
+
+Your configuration will be saved to `.env` file automatically.
+
+### 4. macOS Users - Permission Setup
+
+For macOS users, run the permission checker before using the bot:
 
 ```bash
 python check_macos_permissions.py
 ```
 
-This utility will guide you if any permissions are missing. **Accessibility** permission is critical for the bot to work.
+This utility will guide you through granting the necessary permissions:
 
 #### Required Permissions
 
 The following permissions must be granted in macOS System Preferences:
 
-**Accessibility Access**
+**Accessibility Access** - Required for mouse/keyboard automation
 ![Accessibility Access](images/accessibility-access.png)
 
-**Screen Recording Access**
+**Screen Recording Access** - Required for screenshot capture and WhatsApp detection
 ![Screen Recording Access](images/screen-recording-access.png)
 
-**Automation Access**
+**Automation Access** - Reduces permission dialogs
 ![Automation Access](images/automation-access.png)
 
-### 5. Run the bot
+Grant these permissions in: **System Preferences → Security & Privacy → Privacy**
+
+## Usage
+
+### Basic Usage
+
+You have to run either of the commands below:
 
 ```bash
+# Standard browser automation
 python main.py
+
+# API-based task completion (faster)
+python main.py --api
+
+# Complete all steps even if no tasks available
+python main.py -c
+
+# API mode with complete workflow
+python main.py --api -c
 ```
+
+### Operation Modes
+
+**Browser Mode** (Default):
+- Uses Selenium WebDriver for browser automation
+- Visual task completion with video monitoring
+- More reliable but slower
+
+**API Mode**:
+- Direct API calls for task completion
+- Faster execution
+- Less resource intensive
+
+### Features in Detail
+
+**Smart Task Management:**
+- Automatically detects available tasks
+- Monitors video completion progress
+- Handles different task types and states
+- Prevents infinite loops with stall detection
+
+**Balance & Withdrawal:**
+- Checks account balance automatically
+- Performs withdrawals when balance ≥ specified withdrawal amount
+- Respects weekend restrictions (no withdrawals Sat-Sun)
+- Validates withdrawal completion
+
+**WhatsApp Integration (Works well on macOS):**
+- Automatic WhatsApp opening and navigation
+- Screenshot capture and verification
+- Respects admin-only message restrictions
+- Time-based sending restrictions (9:30 AM - 8:00 PM)
+
+**Error Handling:**
+- Automatic retry mechanisms
+- Screenshot debugging on failures
+- Progress tracking and recovery
+- Graceful handling of permission issues
+
+## Troubleshooting
+
+### Common Issues
+
+**Setup Problems:**
+- Run `python setup.py` again if interrupted
+- Check Python version (3.8+ required)
+- Ensure Chrome browser is installed
+
+**Permission Issues (macOS):**
+- Run `python check_macos_permissions.py`
+- Grant permissions in System Preferences
+- Restart the terminal after granting permissions
+
+**Login Failures:**
+- Verify credentials in `.env` file
+- Check if website URL is correct
+- Ensure account is not locked
+
+**WhatsApp Issues:**
+- Install WhatsApp Desktop for better reliability
+- Check if working group name is correct
+- Verify WhatsApp is properly logged in
+
+### Debug Files
+
+The bot creates debug files for troubleshooting:
+- `ad_watcher_bot.log` - Detailed execution logs
+- `tasks_screenshot.png` - Task completion proof
+- `debug_*.png` - Various debug screenshots
+- `login_error.png` - Login failure diagnostics
+
+## File Structure
+
+```
+ad-watcher-bot/
+├── main.py                     # Main bot script
+├── setup.py                    # Interactive setup script
+├── check_macos_permissions.py  # macOS permission checker
+├── requirements.txt            # Python dependencies
+├── env.example                 # Environment template
+├── .env                        # Your configuration (created by setup)
+├── README.md                   # This file
+└── ad_watcher_bot.log          # Created when main.py is running
+```
+
+## Requirements
+
+- Python 3.8 or higher
+- Google Chrome browser
+- ChromeDriver (auto-installed via webdriver-manager)
+- WhatsApp Desktop (recommended) or WhatsApp Web access
+- Active internet connection
+
+## Security Notes
+
+- Your credentials are stored locally in `.env` file
+- Never share the `.env` file to anyone
+- Review permissions granted to the bot
 
 ## Disclaimer
 
-This bot is for educational purposes only. The user is responsible for complying with the terms of service of any website they use this bot on. The developers are not responsible for any misuse of this bot.
+This bot is for educational and automation purposes only. Users are responsible for:
+- Complying with website terms of service
+- Ensuring account security
+- Using the bot responsibly
+
+The developers are not responsible for any misuse, account restrictions, or other consequences arising from the use of this bot.

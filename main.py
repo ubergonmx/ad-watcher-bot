@@ -75,6 +75,7 @@ class AdWatcherBot:
         self.fund_password = os.getenv('FUND_PASSWORD')
         self.default_identity = os.getenv('DEFAULT_IDENTITY', 'Internship')
         self.working_group = os.getenv('WORKING_GROUP')
+        self.withdrawal_amount = os.getenv('WITHDRAWAL_AMOUNT')
         self.method = os.getenv('DEFAULT_METHOD', method).lower()
         
         if not all([self.username, self.password, self.fund_password]):
@@ -894,7 +895,7 @@ class AdWatcherBot:
             ).text.strip())
             logger.info(f"Balance: {balance} PHP")
             
-            if balance < 60.0:
+            if balance < float(self.withdrawal_amount):
                 logger.info("Balance insufficient for withdrawal")
                 return
             
@@ -938,10 +939,10 @@ class AdWatcherBot:
         self.driver.get(self.WITHDRAW_PAGE_URL)
         time.sleep(3)
         amount_button = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'van-grid-item__content') and normalize-space(text()) = '60']"))
+            EC.element_to_be_clickable((By.XPATH, f"//div[contains(@class, 'van-grid-item__content') and normalize-space(text()) = '{self.withdrawal_amount}']"))
         )
         amount_button.click()
-        logger.info("Selected 60 PHP withdrawal")
+        logger.info(f"Selected {self.withdrawal_amount} PHP withdrawal")
         
         password_input = self.driver.find_element(By.XPATH, "//input[@placeholder='Please enter the fund password']")
         password_input.send_keys(self.fund_password)
