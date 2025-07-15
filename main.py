@@ -74,6 +74,7 @@ class AdWatcherBot:
         self.password = os.getenv('WEBSITE_PASSWORD')
         self.fund_password = os.getenv('FUND_PASSWORD')
         self.default_identity = os.getenv('DEFAULT_IDENTITY', 'Internship')
+        self.working_group = os.getenv('WORKING_GROUP')
         self.method = os.getenv('DEFAULT_METHOD', method).lower()
         
         if not all([self.username, self.password, self.fund_password]):
@@ -804,7 +805,7 @@ class AdWatcherBot:
             time.sleep(1)
             pyautogui.hotkey('command', 'a')
             pyautogui.press('backspace')
-            pyautogui.write('AKQA Working Group 1368')
+            pyautogui.write(os.getenv('WORKING_GROUP'))
             time.sleep(1)
             pyautogui.click(205, 205)  # Select contact
             time.sleep(2)
