@@ -88,16 +88,10 @@ class AdWatcherBot:
         self.tasks_screenshot = None
         self.skip_browser = skip_browser
         
-        # Skip browser setup if using API with skip-whatsapp
         if not skip_browser:
-            # Initialize permissions
             self._check_permissions()
-            
-            # Configure PyAutoGUI
             pyautogui.FAILSAFE = True
             pyautogui.PAUSE = 0.5
-            
-            # Initialize Selenium
             self._setup_selenium()
         else:
             logger.info("Skipping browser setup for API-only mode")
@@ -1207,7 +1201,6 @@ def main():
     
     bot = None
     try:
-        # Skip browser setup if using API with skip-whatsapp
         skip_browser = args.api and args.skip_whatsapp
         bot = AdWatcherBot(complete_all_steps=args.complete, method='api' if args.api else 'browser', skip_browser=skip_browser)
         if args.api:
