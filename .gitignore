@@ -1,9 +1,10 @@
 # Environment variables (contains sensitive credentials)
 .env
 
-# Old or deprecated files
+# Draft, old or deprecated files
 *.old*
 *.deprecated*
+*.draft*
 
 # Python cache files
 __pycache__/
