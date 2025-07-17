@@ -1,10 +1,12 @@
 # Ad Watcher Bot
 
-This bot automates watching video ads and withdrawals from a website, and sends a screenshot proof to a WhatsApp group.
+This bot automates watching video ads and withdrawals from a **specific** website, and sends a screenshot proof to a WhatsApp group.
 
 To start, read [Getting started](#getting-started) section.
 
 To use, read [Basic Usage](#basic-usage) section.
+
+Note: Not tested yet on Windows & Linux
 
 ## Features
 
